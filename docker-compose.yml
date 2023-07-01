@@ -1,0 +1,28 @@
+version: "3.0"
+
+services:
+  db:
+    image: mysql:5.7
+    environment:
+     MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
+      - wdata:/var/lib/mysql
+    networks:
+      - backend
+    
+  lavagna:
+    build: ./ 
+    networks:
+      - backend
+      - frontend
+
+volumes:
+  wdata:       
+networks:
+  backend:
+  frontend:
+  
+
+
+
