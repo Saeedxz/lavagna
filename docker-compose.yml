@@ -5,6 +5,11 @@ services:
     image: mysql:5.7
     environment:
      MYSQL_ROOT_PASSWORD: root
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
     volumes:
       - ./dump.sql:/docker-entrypoint-initdb.d/dump.sql
       - wdata:/var/lib/mysql
@@ -13,6 +18,11 @@ services:
     
   lavagna:
     build: ./ 
+    ports:
+      - 8080:8080
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - backend
       - frontend
