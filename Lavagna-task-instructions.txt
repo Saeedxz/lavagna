@@ -1,0 +1,50 @@
+Lavagna
+=======
+(1) Use sources found in project sub-directory. This is based on https://github.com/digitalfondue/lavagna. Read the DOCS!
+Note: You may find it easier to read documents on github
+
+(2) Build it using maven
+  - Step A: locally - Use a maven container and mount sources as volume. As usual:
+  -- maven projects are built using "mvn verify" in the folder containing the pom.xml
+  -- the output of the build is written into the target sub-folder 
+
+  - Step B: fat docker - create a Dockerfile based on a maven docker image:
+  -- COPY sources in
+  -- Build
+  -- Create an entrypoint that executes Lavagna
+   Notes: 
+   - You can use demo.Dockerfile as a reference BUT
+   -- DO NOT wget the distribution (as this file does)! You MUST build the image yourself using maven.
+   -- DO NOT use CMD. Use ENTRYPOINT and an entrypoint.sh you write
+
+(3) Execute Lavagna in single Docker container using the file-based HSQLDB (i.e. no need for an external DB container)
+
+(4) Replace HSQLDB with a "real" database - MySQL. 
+- Use docker-compose to make it work with MySQL 5.7. Note that you will likely need to improve on your previous work.
+- Save data in a named volume, and make sure that Lavagna does not lose user work between 2 docker-compose executions (i.e. "up", "down" and "up" again)!
+- In your entrypoint, wait for database to listen on port 3306 before launching lavagna. note: depends_on in the docker-compose file is NOT good enough.
+
+(5) It makes sense to put our application behind an nginx reverse proxy:
+- Security-wise
+- Better serving of static content
+- Ability to later add SSL termination and load balancing
+(a) Create a custom nginx container to 
+ - Act as a reverse proxy from port 80 to the UN-EXPOSED application 8080
+ - Serve the static content (found in the webapp folder) DIRECTLY
+(b) make it part of the compose
+
+Here is some relevant documentation
+http://nginx.org/en/docs/http/ngx_http_core_module.html#server
+https://www.keycdn.com/support/nginx-location-directive
+http://nginx.org/en/docs/http/ngx_http_core_module.html#location
+
+(6) Thin docker - create a Dockerfile based on a maven docker image and use multi-stage docker to create an alpine JRE based lavagna image. 
+    -  Note the difference in size between Step B and Step C
+
+(7) Add another server, running in it's own container, which serves documentation on port 8081. Additional instructions are in the readme.
+
+At the end of the excercise you should be able to start 4 containers using "docker-compose up":
+- db
+- java backend
+- nginx frontend
+- documentation server
